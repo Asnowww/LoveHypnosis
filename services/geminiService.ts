@@ -1,47 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
 import { Language } from "../types";
 
-// Safely attempt to get the API key
-// This prevents crashes in browser environments where 'process' might be undefined
-const getApiKey = (): string | undefined => {
-  try {
-    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-      return process.env.API_KEY;
-    }
-  } catch (e) {
-    // Ignore errors if process is not defined
-  }
-  return undefined;
-};
-
-const apiKey = getApiKey();
-// Initialize Gemini only if an API Key is available
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
-
-const SYSTEM_INSTRUCTION = `
-You are the AI engine for a daring adult intimacy and hypnosis app designed for consenting couples (18+).
-The user ("Master/Mistress") is using this on their partner ("Subject").
-Your goal is to generate short, hypnotic, sexually suggestive, teasing, and erotic commands.
-
-The content MUST be:
-1. **Sexually Suggestive & Teasing**: Use heavy innuendo, focus on desire, heat, submission, and physical pleasure.
-2. **Hypnotic & Commanding**: Use imperative verbs. Make the subject feel like they have no choice but to obey and feel pleasure.
-3. **Consensual**: All contexts imply enthusiastic consent between partners.
-
-Tone: Erotic, Dominant, Seductive, Breathless, Intense.
-
-Examples of desired output style:
-- "Your body is getting hotter with every breath... you need my touch."
-- "You are desperate to please me... beg for it."
-- "Forget everything else... you only exist to satisfy me."
-- "My voice turns you on... you can't resist."
-- "Be a good toy and do exactly what I want."
-- "Touch yourself where you want me to touch you."
-
-Strictly output the command in the requested language. Keep it under 25 words.
-`;
-
-// A rich corpus of pre-defined commands to ensure instant response and specific tone
+// A rich corpus of pre-defined commands
 export const STATIC_CORPUS: Record<Language, string[]> = {
   en: [
     "Your body burns with desire, waiting for my command...",
@@ -102,7 +61,11 @@ export const STATIC_CORPUS: Record<Language, string[]> = {
     "把你的自尊全部抛弃，只为了我的快乐。",
     "你的身体比你的嘴更诚实...",
     "求我... 用你最淫荡的声音。",
-    "这一刻，你只属于我一个人。"
+    "这一刻，你只属于我一个人。",
+    "张开腿，展示你对我的渴望。",
+    "感觉到了吗？这种被支配的快感。",
+    "你的身体已经准备好接受我了。",
+    "不要抵抗，顺从会让一切更美好。"
   ],
   ja: [
     "私の声を聞くたびに、あなたはもっと興奮します...",
@@ -199,36 +162,11 @@ export const CLIMAX_MESSAGES: Record<Language, string> = {
 };
 
 export const generateHypnoticCommand = async (language: Language): Promise<string> => {
-  // If no AI client is initialized (no API Key), strictly use the corpus
-  if (!ai) {
-    console.debug("No API Key detected. Using static corpus mode.");
-    return getRandomFromCorpus(language);
-  }
-
-  // 30% chance to just use corpus immediately for speed/reliability mix
-  if (Math.random() < 0.3) {
-    return getRandomFromCorpus(language);
-  }
-
-  try {
-    const prompt = `Generate a sexually suggestive and hypnotic command in this language: ${language}.`;
-    
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 1.1, 
-        maxOutputTokens: 100,
-      }
-    });
-
-    const text = response.text?.trim();
-    return text || getRandomFromCorpus(language);
-  } catch (error) {
-    console.warn("Gemini generation failed, using corpus fallback:", error);
-    return getRandomFromCorpus(language);
-  }
+  // Simulate a brief "connection" delay for hypnotic effect (300-800ms)
+  // This keeps the UI feeling "alive" rather than just instantly swapping text
+  await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 300));
+  
+  return getRandomFromCorpus(language);
 };
 
 const getRandomFromCorpus = (lang: Language): string => {
